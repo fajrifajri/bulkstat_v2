@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 import re
+import sys
 
-bulkstat_dir = "/home/afajri/bulkstat/"
-bulkstat_file = "mme-private-lte_bulkstats_20201217_221605_EST_5_5.csv"
+#bulkstat_dir = "/home/afajri/bulkstat/"
+#bulkstat_file = "mme-private-lte_bulkstats_20201217_221605_EST_5_5.csv"
+bulkstat_file = sys.argv[1]
 
 sch_to_metric_file  = open("bulkstat_sch_to_metric.csv")
 sch_to_metric = sch_to_metric_file.readlines()
@@ -94,3 +96,4 @@ if __name__ == "__main__":
     load_bulkstat_schema()
     load_bulkstat_data()
     print(output)
+ 
