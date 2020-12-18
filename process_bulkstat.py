@@ -2,6 +2,7 @@
 
 import re
 import sys
+from operator import add
 
 #bulkstat_dir = "/home/afajri/bulkstat/"
 #bulkstat_file = "mme-private-lte_bulkstats_20201217_221605_EST_5_5.csv"
@@ -52,44 +53,98 @@ def load_bulkstat_data():
         """
                 disconnectReason8,20201217,183214,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,91,0,0,12,0,0,110,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1
                 mmeSch56,20201217,221500,s1-mme,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+                radius-groupSch4,20201218,174640,%servname%,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         """
         for line in bulkstat_data:
             line = line.strip()
             bulkstat_data_line = line.split(",")
-            for number, data in enumerate(bulkstat_data_line):
-                schema = re.search(r"(\w+)Sch",bulkstat_data_line[0]).group(1)
-                if (schema not in output):
-                    output.setdefault(schema, {})
+            schema_match = re.search(r"(^.*)Sch",line)
+            temp_output = {}
+            if schema_match:
+                schema = schema_match.group(1)
+            for number, data in enumerate(bulkstat_data_line):                
+                if schema not in output:
+                   output.setdefault(schema, {})
                 if number == 0:
                     key = data
+                
+
                 #handle disconnect_reason
-                if "disconnectReason" in key:
+                if "disconnect" in key:
                     if "disconnectReason"  not in output:
                         output.setdefault("disconnectReason",{})
-                    if key in bulkstat_config and number > 2 and data != "0":
-                        data = float(data)
+                    if key in bulkstat_config and number > 2 and data != "0":                        
                         config = bulkstat_config[key][number].replace("%","")
                         metric = schema_to_metric[config]
-                        output["disconnectReason"].setdefault(metric, data)
+                        output["disconnectReason"].setdefault(metric, {})
+                        output["disconnectReason"][metric].setdefault("value", data)
+                elif key == "ippoolSch1":
+                    '''
+                    Special condition to handle IP Pool
+                    ippoolSch1,20201218,182500,pool-3669,0,0,0,244,10.66.0.11
+                    '''                    
+                    if("ippool" not in output):
+                        output.setdefault("ippool",{})
+                    if number == 3:
+                        groupname = bulkstat_data_line[3]
+                        output["ippool"].setdefault(groupname, {})
+                    elif number > 3:
+                        if data != '0' and data != "":
+                            config = bulkstat_config[key][number].replace("%","")
+                            output["ippool"][groupname].setdefault(config, {})
+                            output["ippool"][groupname][config].setdefault("value", data)
+
+                elif key == "ippoolSch2":
+                    '''
+                    Special condition to handle IP Pool group
+                    ippoolSch2,20201218,182500,0,0,0,0,0,0,0,0
+                    '''                
+                    if(bulkstat_data_line[3] != "0"):
+                        if("ippool-group" not in output):
+                            output.setdefault("ippool-group",{})   
+                        if number == 3:
+                            groupname = bulkstat_data_line[3]
+                            output["ippool-group"].setdefault(groupname, {})
+                        elif number > 3:
+                            if data != '0' and data != "":
+                                config = bulkstat_config[key][number].replace("%","")
+                                output["ippool-group"][groupname].setdefault(config, {})
+                                output["ippool-group"][groupname][config].setdefault("value", data)
                 else:
                     if number ==3:
                         identifier = data
-                        if identifier not in output[schema]:
-                            output[schema].setdefault(identifier, {})
+                        #if identifier not in output[schema]:
+                        #    output[schema].setdefault(identifier, {})
                     elif number > 3:
-                        data = float(data)
-                        config = bulkstat_config[key][number].replace("%","")
-                        config_dict = convert_dash_to_nested(config)
-                        output[schema][identifier].setdefault(config_dict,data)
+                        if data != '0' and data != "":
+                            config = bulkstat_config[key][number].replace("%","")
+                            temp_dict = convert_dash_to_nested(config, schema, identifier, data)
 
-def convert_dash_to_nested(metric_with_dash):
-    metric_with_dict = {}
-    for k, v in metric_with_dash.iteritems():
-        if isinstance(v, dict):
-            v = print_dict(v)
-        new[k.replace('.', '-')] = v
 
+def convert_dash_to_nested(metric_with_dash, schema,identifier, data):
+
+    metric_with_dict = current = {}
+    metric_with_dash = metric_with_dash.split("-")
+    metric_with_dash.insert(0, schema)
+    metric_with_dash.insert(1, identifier)
+    for line, string in enumerate(metric_with_dash):
+        if line == len(metric_with_dash)-1:
+            current.setdefault(string, {})
+            current[string].setdefault("value", data)
+
+        else:
+            current[string] = {}
+            current = current[string]
+    merge(output, metric_with_dict)
     return metric_with_dict
+
+def merge(temp_output, temp_metric):
+    for k in temp_metric:
+        if k in temp_output and isinstance(temp_output[k], dict) and isinstance(temp_metric[k], dict):
+            merge(temp_output[k], temp_metric[k])
+        else:
+            temp_output[k] = temp_metric[k]   
+  
 
 if __name__ == "__main__":
     load_sch_to_mtric()
