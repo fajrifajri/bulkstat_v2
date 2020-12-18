@@ -30,21 +30,21 @@ def load_sch_to_mtric():
         schema_to_metric.setdefault(schema_name, metric_name)
 
 def load_bulkstat_schema():
-        """
-        input:
-        system       disconnectReason3        No          disconnectReason3,MME,%localdate%,%localtime%,%disc-reason-100%,%disc-reason-101%,%disc-reason-102%,%disc-reason-103%,%disc-reason-104%,%disc-reason-105%,%disc-reason-106%,%disc-reason-107%,%disc-reason-108%,%disc-reason-109%,%disc-reason-110%,%disc-reason-111%,%disc-reason-112%,%disc-reason-113%,%disc-reason-114%,%disc-reason-115%,%disc-reason-116%,%disc-reason-117%,%disc-reason-118%,%disc-reason-119%,%disc-reason-120%,%disc-reason-121%,%disc-reason-122%,%disc-reason-123%,%disc-reason-124%,%disc-reason-125%,%disc-reason-126%,%disc-reason-127%,%disc-reason-128%,%disc-reason-129%,%disc-reason-130%,%disc-reason-131%,%disc-reason-132%,%disc-reason-133%,%disc-reason-134%,%disc-reason-135%,%disc-reason-136%,%disc-reason-137%,%disc-reason-138%,%disc-reason-139%,%disc-reason-140%,%disc-reason-141%,%disc-reason-142%,%disc-reason-143%,%disc-reason-144%,%disc-reason-145%,%disc-reason-146%,%disc-reason-147%,%disc-reason-148%,%disc-reason-149%
-        output:
-        'disconnectReason8': {4: '%disc-reason-350%', 5: '%disc-reason-351%', 6: '%disc-reason-352%', 7: '%disc-reason-353%', 8: '%disc-reason-354%', 9: '%disc-reason-355%',
-        """
-        for line in bulkstat_schema:
-                line = line.strip()
-                line = re.sub('\s+',' ', line)
-                bulkstat_config_line = line.split(" ")[3].split(",")
-                for number,cfg in enumerate(bulkstat_config_line):
-                        if number == 0:
-                                bulkstat_config.setdefault(cfg, {})
-                        if number>3:
-                                bulkstat_config[bulkstat_config_line[0]].setdefault(number, cfg)
+    """
+    input:
+    system       disconnectReason3        No          disconnectReason3,MME,%localdate%,%localtime%,%disc-reason-100%,%disc-reason-101%,%disc-reason-102%,%disc-reason-103%,%disc-reason-104%,%disc-reason-105%,%disc-reason-106%,%disc-reason-107%,%disc-reason-108%,%disc-reason-109%,%disc-reason-110%,%disc-reason-111%,%disc-reason-112%,%disc-reason-113%,%disc-reason-114%,%disc-reason-115%,%disc-reason-116%,%disc-reason-117%,%disc-reason-118%,%disc-reason-119%,%disc-reason-120%,%disc-reason-121%,%disc-reason-122%,%disc-reason-123%,%disc-reason-124%,%disc-reason-125%,%disc-reason-126%,%disc-reason-127%,%disc-reason-128%,%disc-reason-129%,%disc-reason-130%,%disc-reason-131%,%disc-reason-132%,%disc-reason-133%,%disc-reason-134%,%disc-reason-135%,%disc-reason-136%,%disc-reason-137%,%disc-reason-138%,%disc-reason-139%,%disc-reason-140%,%disc-reason-141%,%disc-reason-142%,%disc-reason-143%,%disc-reason-144%,%disc-reason-145%,%disc-reason-146%,%disc-reason-147%,%disc-reason-148%,%disc-reason-149%
+    output:
+    'disconnectReason8': {4: '%disc-reason-350%', 5: '%disc-reason-351%', 6: '%disc-reason-352%', 7: '%disc-reason-353%', 8: '%disc-reason-354%', 9: '%disc-reason-355%',
+    """
+    for line in bulkstat_schema:
+        line = line.strip()
+        line = re.sub('\s+',' ', line)
+        bulkstat_config_line = line.split(" ")[3].split(",")
+        for number,cfg in enumerate(bulkstat_config_line):
+            if number == 0:
+                bulkstat_config.setdefault(cfg, {})
+            if number>3:
+                bulkstat_config[bulkstat_config_line[0]].setdefault(number, cfg)
 
 def load_bulkstat_data():
         """
@@ -52,31 +52,45 @@ def load_bulkstat_data():
                 mmeSch56,20201217,221500,s1-mme,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         """
         for line in bulkstat_data:
-                line = line.strip()
-                bulkstat_data_line = line.split(",")
-                for number, data in enumerate(bulkstat_data_line):
-                        if number == 0:
-                                key = data
-                        #handle disconnect_reason
-                        if "disconnectReason" in key:
-                                output.setdefault("disconnectReason",{})
-                                if key in bulkstat_config and number > 2 and data != "0":
-                                        data = float(data)
-                                        config = bulkstat_config[key][number].replace("%","")
-                                        metric = schema_to_metric[config]
-                                        output["disconnectReason"].setdefault(metric, data)
-                        else:
-                            if number ==3:
-                                id = data
-                                schema = re.search(r"(\w+)Sch",bulkstat_data_line[0]).group(1)
-                            elif number > 3:
-                                data = float(data)
-                                config = bulkstat_config[key][number].replace("%","")
-                                output[schema].setdefault(config,data)
+            line = line.strip()
+            bulkstat_data_line = line.split(",")
+            for number, data in enumerate(bulkstat_data_line):
+                schema = re.search(r"(\w+)Sch",bulkstat_data_line[0]).group(1)
+                if (schema not in output):
+                    output.setdefault(schema, {})
+                if number == 0:
+                    key = data
+                #handle disconnect_reason
+                if "disconnectReason" in key:
+                    if "disconnectReason"  not in output:
+                        output.setdefault("disconnectReason",{})
+                    if key in bulkstat_config and number > 2 and data != "0":
+                        data = float(data)
+                        config = bulkstat_config[key][number].replace("%","")
+                        metric = schema_to_metric[config]
+                        output["disconnectReason"].setdefault(metric, data)
+                else:
+                    if number ==3:
+                        identifier = data
+                        if identifier not in output[schema]:
+                            output[schema].setdefault(identifier, {})
+                    elif number > 3:
+                        data = float(data)
+                        config = bulkstat_config[key][number].replace("%","")
+                        config_dict = convert_dash_to_nested(config)
+                        output[schema][identifier].setdefault(config_dict,data)
 
+def convert_dash_to_nested(metric_with_dash):
+    metric_with_dict = {}
+    for k, v in metric_with_dash.iteritems():
+        if isinstance(v, dict):
+            v = print_dict(v)
+        new[k.replace('.', '-')] = v
+
+    return metric_with_dict
 
 if __name__ == "__main__":
-        load_sch_to_mtric()
-        load_bulkstat_schema()
-        load_bulkstat_data()
+    load_sch_to_mtric()
+    load_bulkstat_schema()
+    load_bulkstat_data()
         print(output)
