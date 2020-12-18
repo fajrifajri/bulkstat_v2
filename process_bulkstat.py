@@ -3,7 +3,7 @@
 import re
 
 bulkstat_dir = "/home/afajri/bulkstat/"
-bulkstat_file = "mme-private-lte_bulkstats_20201217_204437_EST_5_5.csv"
+bulkstat_file = "mme-private-lte_bulkstats_20201217_221605_EST_5_5.csv"
 
 sch_to_metric_file  = open("bulkstat_sch_to_metric.csv")
 sch_to_metric = sch_to_metric_file.readlines()
@@ -49,6 +49,7 @@ def load_bulkstat_schema():
 def load_bulkstat_data():
         """
                 disconnectReason8,20201217,183214,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,91,0,0,12,0,0,110,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1
+                mmeSch56,20201217,221500,s1-mme,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         """
         for line in bulkstat_data:
                 line = line.strip()
@@ -60,10 +61,18 @@ def load_bulkstat_data():
                         if "disconnectReason" in key:
                                 output.setdefault("disconnectReason",{})
                                 if key in bulkstat_config and number > 2 and data != "0":
-                                        data = int(data)
+                                        data = float(data)
                                         config = bulkstat_config[key][number].replace("%","")
                                         metric = schema_to_metric[config]
                                         output["disconnectReason"].setdefault(metric, data)
+                        else:
+                            if number ==3:
+                                id = data
+                                schema = re.search(r"(\w+)Sch",bulkstat_data_line[0]).group(1)
+                            elif number > 3:
+                                data = float(data)
+                                config = bulkstat_config[key][number].replace("%","")
+                                output[schema].setdefault(config,data)
 
 
 if __name__ == "__main__":
