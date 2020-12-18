@@ -93,4 +93,4 @@ if __name__ == "__main__":
     load_sch_to_mtric()
     load_bulkstat_schema()
     load_bulkstat_data()
-        print(output)
+    print(output)
