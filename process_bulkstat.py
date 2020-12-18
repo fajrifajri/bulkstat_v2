@@ -15,7 +15,7 @@ bulkstat_schema_file = open("bulkstat_scheme.csv")
 bulkstat_schema = bulkstat_schema_file.readlines()
 bulkstat_schema_file.close()
 
-bulkstat_data_file = open(bulkstat_dir + bulkstat_file)
+bulkstat_data_file = open(bulkstat_file)
 bulkstat_data = bulkstat_data_file.readlines()
 bulkstat_data_file.close()
 
