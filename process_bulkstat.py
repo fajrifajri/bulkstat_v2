@@ -2,12 +2,13 @@
 
 import re
 import sys
-from operator import add
+import subprocess
 
 #bulkstat_dir = "/home/afajri/bulkstat/"
 #bulkstat_file = "mme-private-lte_bulkstats_20201217_221605_EST_5_5.csv"
 bulkstat_file = sys.argv[1]
 
+pushgateway_ip = "127.0.0.1"
 sch_to_metric_file  = open("bulkstat_sch_to_metric.csv")
 sch_to_metric = sch_to_metric_file.readlines()
 sch_to_metric_file.close()
@@ -20,11 +21,13 @@ bulkstat_data_file = open(bulkstat_file)
 bulkstat_data = bulkstat_data_file.readlines()
 bulkstat_data_file.close()
 
-schema_to_metric = {}
-output = {}
-bulkstat_config = {}
-
 host = bulkstat_file.split("_")[0]
+temp_file = "temp_file.txt"
+output_file = open(temp_file, "w+")
+
+schema_to_metric  = {}
+bulkstat_config = {}
+output = {}
 
 def load_sch_to_mtric():
     for schema in sch_to_metric:
@@ -71,28 +74,21 @@ def load_bulkstat_data():
 
                 #handle disconnect_reason
                 if "disconnect" in key:
-                    if "disconnectReason"  not in output:
-                        output.setdefault("disconnectReason",{})
-                    if key in bulkstat_config and number > 2 and data != "0":                        
+                    if key in bulkstat_config and number > 2 and data != "0":                                              
                         config = bulkstat_config[key][number].replace("%","")
                         metric = schema_to_metric[config]
-                        output["disconnectReason"].setdefault(metric, {})
-                        output["disconnectReason"][metric].setdefault("value", data)
+                        output_file.write("disconnectReason {{reason=\"{}\"}} {}\n".format(metric, data)) 
                 elif key == "ippoolSch1":
                     '''
                     Special condition to handle IP Pool
                     ippoolSch1,20201218,182500,pool-3669,0,0,0,244,10.66.0.11
                     '''                    
-                    if("ippool" not in output):
-                        output.setdefault("ippool",{})
                     if number == 3:
                         groupname = bulkstat_data_line[3]
-                        output["ippool"].setdefault(groupname, {})
                     elif number > 3:
-                        if data != '0' and data != "":
+                        if data != '0' and data != "" and data.isnumeric():
                             config = bulkstat_config[key][number].replace("%","")
-                            output["ippool"][groupname].setdefault(config, {})
-                            output["ippool"][groupname][config].setdefault("value", data)
+                            output_file.write("ippool {{poolname=\"{}\", metric=\"{}\"}} {}\n".format(groupname, config, data)) 
 
                 elif key == "ippoolSch2":
                     '''
@@ -100,55 +96,41 @@ def load_bulkstat_data():
                     ippoolSch2,20201218,182500,0,0,0,0,0,0,0,0
                     '''                
                     if(bulkstat_data_line[3] != "0"):
-                        if("ippool-group" not in output):
-                            output.setdefault("ippool-group",{})   
                         if number == 3:
                             groupname = bulkstat_data_line[3]
                             output["ippool-group"].setdefault(groupname, {})
                         elif number > 3:
                             if data != '0' and data != "":
                                 config = bulkstat_config[key][number].replace("%","")
-                                output["ippool-group"][groupname].setdefault(config, {})
-                                output["ippool-group"][groupname][config].setdefault("value", data)
+                                output_file.write("ippool-group {poolname = \"{}\", metric = \"{}\"} {}\n".format(groupname, config, data)) 
+                                            
                 else:
                     if number ==3:
                         identifier = data
-                        #if identifier not in output[schema]:
-                        #    output[schema].setdefault(identifier, {})
                     elif number > 3:
                         if data != '0' and data != "":
-                            config = bulkstat_config[key][number].replace("%","")
-                            temp_dict = convert_dash_to_nested(config, schema, identifier, data)
+                            config = bulkstat_config[key][number].replace("%","").split("-")
+                            string_output = "{} {{id=\"{}\"".format(schema, identifier)
+                            for num,met in enumerate(config):
+                                string_output = string_output + ", metric{}=\"{}\"".format(num, met)
+                            string_output = string_output + "}} {}\n".format(data)
+                            output_file.write(string_output)
+                            
 
 
-def convert_dash_to_nested(metric_with_dash, schema,identifier, data):
-
-    metric_with_dict = current = {}
-    metric_with_dash = metric_with_dash.split("-")
-    metric_with_dash.insert(0, schema)
-    metric_with_dash.insert(1, identifier)
-    for line, string in enumerate(metric_with_dash):
-        if line == len(metric_with_dash)-1:
-            current.setdefault(string, {})
-            current[string].setdefault("value", data)
-
-        else:
-            current[string] = {}
-            current = current[string]
-    merge(output, metric_with_dict)
-    return metric_with_dict
-
-def merge(temp_output, temp_metric):
-    for k in temp_metric:
-        if k in temp_output and isinstance(temp_output[k], dict) and isinstance(temp_metric[k], dict):
-            merge(temp_output[k], temp_metric[k])
-        else:
-            temp_output[k] = temp_metric[k]   
+def gen_pushgw_format():
+    '''
+    cmd = 'cat tempfile.txt |  curl --data-binary @- http://' + pushgateway +'/metrics/job/bulkstat/node/' +node
+    os.system(cmd)
+    '''
+    update = subprocess.Popen(["cat", temp_file, "|  curl --data-binary @- http://", pushgateway_ip + "/metrics/job/bulkstat/node/" + node], stdout=subprocess.PIPE)
+    output_file.close()
   
 
 if __name__ == "__main__":
     load_sch_to_mtric()
     load_bulkstat_schema()
     load_bulkstat_data()
-    print(output)
+    gen_pushgw_format()
+    #print(output)
  
