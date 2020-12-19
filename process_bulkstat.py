@@ -84,7 +84,7 @@ def load_bulkstat_data():
                     ippoolSch1,20201218,182500,pool-3669,0,0,0,244,10.66.0.11
                     '''                    
                     if number == 3:
-                        groupname = bulkstat_data_line[3]
+                        groupname = bulkstat_data_line[3].replace("-","_")
                     elif number > 3:
                         if data != '0' and data != "" and data.isnumeric():
                             config = bulkstat_config[key][number].replace("%","")
@@ -97,16 +97,15 @@ def load_bulkstat_data():
                     '''                
                     if(bulkstat_data_line[3] != "0"):
                         if number == 3:
-                            groupname = bulkstat_data_line[3]
-                            output["ippool-group"].setdefault(groupname, {})
+                            groupname = bulkstat_data_line[3].replace("-","_")
                         elif number > 3:
                             if data != '0' and data != "":
                                 config = bulkstat_config[key][number].replace("%","")
-                                output_file.write("ippool-group {poolname = \"{}\", metric = \"{}\"} {}\n".format(groupname, config, data)) 
+                                output_file.write("ippool_group {poolname = \"{}\", metric = \"{}\"} {}\n".format(groupname, config, data)) 
                                             
                 else:
                     if number ==3:
-                        identifier = data
+                        identifier = data.replace("-","_")
                     elif number > 3:
                         if data != '0' and data != "":
                             config = bulkstat_config[key][number].replace("%","").split("-")
