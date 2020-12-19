@@ -2,7 +2,7 @@
 
 import re
 import sys
-import subprocess
+import os
 
 #bulkstat_dir = "/home/afajri/bulkstat/"
 #bulkstat_file = "mme-private-lte_bulkstats_20201217_221605_EST_5_5.csv"
@@ -123,7 +123,9 @@ def gen_pushgw_format():
     cmd = 'cat tempfile.txt |  curl --data-binary @- http://' + pushgateway +'/metrics/job/bulkstat/node/' +node
     os.system(cmd)
     '''
-    update = subprocess.Popen(["/bin/cat ", temp_file, "|  curl --data-binary @- http://", pushgateway_ip + "/metrics/job/bulkstat/node/" + host], stdout=subprocess.PIPE)
+    command = "/bin/cat ", temp_file, "|  curl --data-binary @- http://", pushgateway_ip + "/metrics/job/bulkstat/node/" + host
+    os.system(command)
+
     output_file.close()
   
 
