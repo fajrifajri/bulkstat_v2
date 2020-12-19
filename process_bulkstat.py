@@ -123,10 +123,13 @@ def gen_pushgw_format():
     cmd = 'cat tempfile.txt |  curl --data-binary @- http://' + pushgateway +'/metrics/job/bulkstat/node/' +node
     os.system(cmd)
     '''
+    output_file.close()
+
     command = "/bin/cat ", temp_file, "|  curl --data-binary @- http://", pushgateway_ip + "/metrics/job/bulkstat/node/" + host
+    print(command)
     os.system(command)
 
-    output_file.close()
+    
   
 
 if __name__ == "__main__":
