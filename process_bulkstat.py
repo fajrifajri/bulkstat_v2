@@ -99,7 +99,7 @@ def load_bulkstat_data():
                         if number == 3:
                             groupname = bulkstat_data_line[3]
                         elif number > 3:
-                            if data != '0' and data != "":
+                            if data != '0' and data != "" and data.isnumeric():
                                 config = bulkstat_config[key][number].replace("%","")
                                 output_file.write("ippool_group {poolname = \"{}\", metric = \"{}\"} {}\n".format(groupname.replace("-","_"), config.replace("-","_"), data)) 
                                             
@@ -107,7 +107,7 @@ def load_bulkstat_data():
                     if number ==3:
                         identifier = data
                     elif number > 3:
-                        if data != '0' and data != "":
+                        if data != '0' and data != "" and data.isnumeric():
                             config = bulkstat_config[key][number].replace("%","").split("-")
                             string_output = "{} {{id=\"{}\"".format(schema.replace("-","_"), identifier.replace("-","_"))
                             for num,met in enumerate(config):
