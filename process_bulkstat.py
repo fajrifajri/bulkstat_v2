@@ -123,7 +123,7 @@ def gen_pushgw_format():
     cmd = 'cat tempfile.txt |  curl --data-binary @- http://' + pushgateway +'/metrics/job/bulkstat/node/' +node
     os.system(cmd)
     '''
-    update = subprocess.Popen(["cat ", temp_file, "|  curl --data-binary @- http://", pushgateway_ip + "/metrics/job/bulkstat/node/" + host], stdout=subprocess.PIPE)
+    update = subprocess.Popen(["/bin/cat ", temp_file, "|  curl --data-binary @- http://", pushgateway_ip + "/metrics/job/bulkstat/node/" + host], stdout=subprocess.PIPE)
     output_file.close()
   
 
