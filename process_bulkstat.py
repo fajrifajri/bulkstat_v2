@@ -77,18 +77,18 @@ def load_bulkstat_data():
                     if key in bulkstat_config and number > 2 and data != "0":                                              
                         config = bulkstat_config[key][number].replace("%","")
                         metric = schema_to_metric[config]
-                        output_file.write("disconnectReason {{reason=\"{}\"}} {}\n".format(metric, data)) 
+                        output_file.write("disconnectReason {{reason=\"{}\"}} {}\n".format(metric.replace("-","_"), data)) 
                 elif key == "ippoolSch1":
                     '''
                     Special condition to handle IP Pool
                     ippoolSch1,20201218,182500,pool-3669,0,0,0,244,10.66.0.11
                     '''                    
                     if number == 3:
-                        groupname = bulkstat_data_line[3].replace("-","_")
+                        groupname = bulkstat_data_line[3]
                     elif number > 3:
                         if data != '0' and data != "" and data.isnumeric():
                             config = bulkstat_config[key][number].replace("%","")
-                            output_file.write("ippool {{poolname=\"{}\", metric=\"{}\"}} {}\n".format(groupname, config, data)) 
+                            output_file.write("ippool {{poolname=\"{}\", metric=\"{}\"}} {}\n".format(groupname.replace("-","_"), config.replace("-","_"), data)) 
 
                 elif key == "ippoolSch2":
                     '''
@@ -97,19 +97,19 @@ def load_bulkstat_data():
                     '''                
                     if(bulkstat_data_line[3] != "0"):
                         if number == 3:
-                            groupname = bulkstat_data_line[3].replace("-","_")
+                            groupname = bulkstat_data_line[3]
                         elif number > 3:
                             if data != '0' and data != "":
                                 config = bulkstat_config[key][number].replace("%","")
-                                output_file.write("ippool_group {poolname = \"{}\", metric = \"{}\"} {}\n".format(groupname, config, data)) 
+                                output_file.write("ippool_group {poolname = \"{}\", metric = \"{}\"} {}\n".format(groupname.replace("-","_"), config.replace("-","_"), data)) 
                                             
                 else:
                     if number ==3:
-                        identifier = data.replace("-","_")
+                        identifier = data
                     elif number > 3:
                         if data != '0' and data != "":
                             config = bulkstat_config[key][number].replace("%","").split("-")
-                            string_output = "{} {{id=\"{}\"".format(schema, identifier)
+                            string_output = "{} {{id=\"{}\"".format(schema.replace("-","_"), identifier.replace("-","_"))
                             for num,met in enumerate(config):
                                 string_output = string_output + ", metric{}=\"{}\"".format(num, met)
                             string_output = string_output + "}} {}\n".format(data)
