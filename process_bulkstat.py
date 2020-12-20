@@ -4,8 +4,7 @@ import re
 import sys
 import os
 
-#bulkstat_dir = "/home/afajri/bulkstat/"
-#bulkstat_file = "mme-private-lte_bulkstats_20201217_221605_EST_5_5.csv"
+
 bulkstat_file = sys.argv[1]
 
 pushgateway_ip = "127.0.0.1"
@@ -109,8 +108,6 @@ def load_bulkstat_data():
             #handle disconnect_reason
             if "disconnect" in key:
                 if key in bulkstat_config and number > 2 and data != "0":  
-                    print(key)                                                       
-                    print(number)
                     config = bulkstat_config[key][number].replace("%","")
                     metric = schema_to_metric[config]
                     output_file.write("disconnectReason {{reason=\"{}\"}} {}\n".format(metric.replace("-","_"), data)) 

@@ -42,11 +42,11 @@ gtpu {id="s5u_sgw", metric0="total", metric1="non", metric2="gbr", metric3="qcis
 gtpu {id="s5u_sgw", metric0="total", metric1="non", metric2="gbr", metric3="qcis", metric4="uplink", metric5="bytes"} 28398284
 gtpu {id="s5u_sgw", metric0="total", metric1="non", metric2="gbr", metric3="qcis", metric4="dwlink", metric5="pkts"} 358179
 gtpu {id="s5u_sgw", metric0="total", metric1="non", metric2="gbr", metric3="qcis", metric4="dwlink", metric5="bytes"} 407671194
-card {id="1", metric0="numproc"} 278
+card {id="1", metric0="numproc"} 280
 card {id="1", metric0="memused"} 14839
 card {id="1", metric0="memtotal"} 32768
 card {id="1", metric0="numcpu"} 1
-card {id="1", metric0="cpu0", metric1="numproc"} 278
+card {id="1", metric0="cpu0", metric1="numproc"} 280
 card {id="1", metric0="cpu0", metric1="memused"} 14839
 card {id="1", metric0="cpu0", metric1="memtotal"} 32768
 card {id="1", metric0="task", metric1="sessmgr", metric2="num"} 11
@@ -410,3 +410,6 @@ saegw {id="saegw", metric0="collapsed", metric1="subdatastat", metric2="dlpktdro
 saegw {id="saegw", metric0="collapsed", metric1="subdatastat", metric2="dlbytedrop", metric3="qci8"} 3230305
 saegw {id="saegw", metric0="collapsed", metric1="subqosstat", metric2="bearset", metric3="qci8"} 118
 saegw {id="saegw", metric0="collapsed", metric1="subqosstat", metric2="bearrel", metric3="qci8"} 118
+disconnectReason {reason="Admin_disconnect"} 12
+disconnectReason {reason="Remote_disconnect"} 106
+disconnectReason {reason="No_response"} 2
