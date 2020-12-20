@@ -60,7 +60,7 @@ for line in bulkstat:
             start = False
             num += 1
             line_num = 0
-            print("\nschema disconnectReason{} format disconnectReason{},%localdate%,%localtime%,%apn%{}".format(num, num, metric), end = "")
+            print("\nschema disconnectReason{} format disconnectReason{},%localdate%,%localtime%,{}".format(num, num, metric), end = "")
         else:
             print(",{}".format(metric), end="")        
 

@@ -13,9 +13,9 @@ sch_to_metric_file  = open("bulkstat_sch_to_metric.csv")
 sch_to_metric = sch_to_metric_file.readlines()
 sch_to_metric_file.close()
 
-bulkstat_schema_file = open("bulkstat_scheme.csv")
-bulkstat_schema = bulkstat_schema_file.readlines()
-bulkstat_schema_file.close()
+bulkstat_schema_config = open("bulkstat_config.cfg")
+bulkstat_schema = bulkstat_schema_config.readlines()
+bulkstat_schema_config.close()
 
 bulkstat_data_file = open(bulkstat_file)
 bulkstat_data = bulkstat_data_file.readlines()
@@ -48,22 +48,38 @@ def load_sch_to_mtric():
 def load_bulkstat_schema():
     """
     This function is to load bulkstat schema data.
-    bulkstat schema data is an output of "show bulkstat schema"
+    bulkstat schema data is an output of "show config bulkstat"
 
     input:
-    system       disconnectReason3        No          disconnectReason3,MME,%localdate%,%localtime%,%disc-reason-100%,%disc-reason-101%,%disc-reason-102%,%disc-reason-103%,%disc-reason-104%,%disc-reason-105%,%disc-reason-106%,%disc-reason-107%,%disc-reason-108%,%disc-reason-109%,%disc-reason-110%,%disc-reason-111%,%disc-reason-112%,%disc-reason-113%,%disc-reason-114%,%disc-reason-115%,%disc-reason-116%,%disc-reason-117%,%disc-reason-118%,%disc-reason-119%,%disc-reason-120%,%disc-reason-121%,%disc-reason-122%,%disc-reason-123%,%disc-reason-124%,%disc-reason-125%,%disc-reason-126%,%disc-reason-127%,%disc-reason-128%,%disc-reason-129%,%disc-reason-130%,%disc-reason-131%,%disc-reason-132%,%disc-reason-133%,%disc-reason-134%,%disc-reason-135%,%disc-reason-136%,%disc-reason-137%,%disc-reason-138%,%disc-reason-139%,%disc-reason-140%,%disc-reason-141%,%disc-reason-142%,%disc-reason-143%,%disc-reason-144%,%disc-reason-145%,%disc-reason-146%,%disc-reason-147%,%disc-reason-148%,%disc-reason-149%
+    card schema cardSch9 format cardSch9,%localdate%,%localtime%,%card%,%cpu0-vpputil-txpkts-5minave%,%cpu0-vpputil-rxpkts-15minave%,%cpu0-vpputil-txpkts-15minave%,%cpu0-vpp-rx-pkts%,%cpu0-vpp-tx-pkts%,%cpu0-vpp-rx-bytes%,%cpu0-vpp-tx-bytes%,%cpu0-vpp-rx-miss%,%cpu0-vpp-rx-err%,%cpu0-vpp-tx-err%,%cpu0-vpp-rx-nombuf%,%cpu0-vpp-rx-size-0-63%,%cpu0-vpp-rx-size-64%,%cpu0-vpp-rx-size-65-127%,%cpu0-vpp-rx-size-128-255%,%cpu0-vpp-rx-size-256-511%,%cpu0-vpp-rx-size-512-1023%,%cpu0-vpp-rx-size-1024-1518%,%cpu0-vpp-rx-size-1519-max%,%cpu0-vpp-tx-size-64%,%cpu0-vpp-tx-size-65-127%,%cpu0-vpp-tx-size-128-255%,%cpu0-vpp-tx-size-256-511%,%cpu0-vpp-tx-size-512-1023%,%cpu0-vpp-tx-size-1024-1518%,%cpu0-vpp-tx-size-1519-max%,%cpu0-vpp-sw-rx-pkts%,%cpu0-vpp-sw-tx-pkts%,%cpu0-vpp-sw-rx-bytes%,%cpu0-vpp-sw-tx-bytes%,%cpu0-vpp-sw-rx-ip4%,%cpu0-vpp-sw-rx-ip6%,%cpu0-vpp-sw-rx-drops%,%cpu1-vpputil-now%,%cpu1-vpputil-5minave%,%cpu1-vpputil-15minave%,%cpu1-vpputil-rxbytes-5secave%,%cpu1-vpputil-txbytes-5secave%,%cpu1-vpputil-rxbytes-5minave%,%cpu1-vpputil-txbytes-5minave%
+    schema disconnectReason1 format disconnectReason1,%localdate%,%localtime%,%apn%%disc-reason-0%,%disc-reason-1%,%disc-reason-2%,%disc-reason-3%,%disc-reason-4%,%disc-reason-5%,%disc-reason-6%,%disc-reason-7%,%disc-reason-8%,%disc-reason-9%,%disc-reason-10%,%disc-reason-11%,%disc-reason-12%,%disc-reason-13%,%disc-reason-14%,%disc-reason-15%,%disc-reason-16%,%disc-reason-17%,%disc-reason-18%,%disc-reason-19%,%disc-reason-20%,%disc-reason-21%,%disc-reason-22%,%disc-reason-23%,%disc-reason-24%,%disc-reason-25%,%disc-reason-26%,%disc-reason-27%,%disc-reason-28%,%disc-reason-29%,%disc-reason-30%,%disc-reason-31%,%disc-reason-32%,%disc-reason-33%,%disc-reason-34%,%disc-reason-35%,%disc-reason-36%,%disc-reason-37%,%disc-reason-38%,%disc-reason-39%,%disc-reason-40%,%disc-reason-41%,%disc-reason-42%,%disc-reason-43%,%disc-reason-44%,%disc-reason-45%,%disc-reason-46%,%disc-reason-47%,%disc-reason-48%,%disc-reason-49%,%disc-reason-50%,%disc-reason-51%,%disc-reason-52%,%disc-reason-53%,%disc-reason-54%,%disc-reason-55%,%disc-reason-56%,%disc-reason-57%,%disc-reason-58%,%disc-reason-59%
+      
+
     output as a dictionoary
     'disconnectReason8': {4: '%disc-reason-350%', 5: '%disc-reason-351%', 6: '%disc-reason-352%', 7: '%disc-reason-353%', 8: '%disc-reason-354%', 9: '%disc-reason-355%',
+
     """
     for line in bulkstat_schema:
         line = line.strip()
-        line = re.sub('\s+',' ', line)
-        bulkstat_config_line = line.split(" ")[3].split(",")
-        for number,cfg in enumerate(bulkstat_config_line):
-            if number == 0:
-                bulkstat_config.setdefault(cfg, {})
-            if number>3:
-                bulkstat_config[bulkstat_config_line[0]].setdefault(number, cfg)
+        if "schema" in line:
+            line = re.sub('\s+',' ', line)
+            bulkstat_line = False        
+            if line.split(" ")[0] == "schema":
+                location = 3
+                start = 2
+                bulkstat_line = True
+            elif line.split(" ")[1] == "schema":
+                location = 4
+                start = 3
+                bulkstat_line = True
+            if (bulkstat_line):
+                bulkstat_config_line = line.split(" ")[location].split(",")
+                for number,cfg in enumerate(bulkstat_config_line):
+                    if number == 0:
+                        bulkstat_config.setdefault(cfg, {})
+                    if number>start:
+                        bulkstat_config[bulkstat_config_line[0]].setdefault(number, cfg)
+
 
 def load_bulkstat_data():
     """
@@ -80,6 +96,7 @@ def load_bulkstat_data():
         bulkstat_data_line = line.split(",")
         schema_match = re.search(r"(^.*)Sch",line)
         temp_output = {}
+
         if schema_match:
             schema = schema_match.group(1)
         for number, data in enumerate(bulkstat_data_line):                
@@ -91,7 +108,9 @@ def load_bulkstat_data():
 
             #handle disconnect_reason
             if "disconnect" in key:
-                if key in bulkstat_config and number > 2 and data != "0":                                              
+                if key in bulkstat_config and number > 2 and data != "0":  
+                    print(key)                                                       
+                    print(number)
                     config = bulkstat_config[key][number].replace("%","")
                     metric = schema_to_metric[config]
                     output_file.write("disconnectReason {{reason=\"{}\"}} {}\n".format(metric.replace("-","_"), data)) 
@@ -111,7 +130,7 @@ def load_bulkstat_data():
                     identifier = data
                 elif number > 3:
                     if data != '0' and data != "" and data.isnumeric():
-                        print(key)
+                        #print("{} - {} - {}".format(key, number, bulkstat_config[key][number]))                                               
                         config = bulkstat_config[key][number].replace("%","").split("-")
                         string_output = "{} {{id=\"{}\"".format(schema.replace("-","_"), identifier.replace("-","_"))
                         for num,met in enumerate(config):
