@@ -146,7 +146,7 @@ def gen_pushgw_format():
     '''
     output_file.close()
 
-    command = "/bin/cat " + temp_file + "|  curl --data-binary @- http://" + pushgateway_ip + ":9091/metrics/" + host
+    command = "/bin/cat " + temp_file + "|  curl --data-binary @- http://" + pushgateway_ip + ":9091/metrics/job/plte/" + host
     os.system(command)
 
     
