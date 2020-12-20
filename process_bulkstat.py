@@ -128,8 +128,8 @@ def load_bulkstat_data():
                     identifier = data
                 elif number > 3:
                     if data != '0' and data != "" and data.isnumeric():
-                        #print("{} - {} - {}".format(key, number, bulkstat_config[key][number]))                                               
-                        config = bulkstat_config[key][number].replace("%","").split("-")
+                        print("{} - {} - {}".format(key, number, bulkstat_config[key][number]))                                               
+                        config = bulkstat_config[key][number].replace("%","").split("-")                        
                         string_output = "{} {{id=\"{}\"".format(schema.replace("-","_"), identifier.replace("-","_"))
                         for num,met in enumerate(config):
                             string_output = string_output + ", metric{}=\"{}\"".format(num, met)
@@ -146,7 +146,7 @@ def gen_pushgw_format():
     '''
     output_file.close()
 
-    command = "/bin/cat " + temp_file + "|  curl --data-binary @- http://" + pushgateway_ip + ":9091/metrics/job/bulkstat/node/" + host
+    command = "/bin/cat " + temp_file + "|  curl --data-binary @- http://" + pushgateway_ip + ":9091/metrics/" + host
     os.system(command)
 
     
