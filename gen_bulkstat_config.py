@@ -47,7 +47,7 @@ for line in bulkstat:
                 print("\n{} schema {}Sch{} format {}Sch{},%localdate%,%localtime%,%card%-%port%,{}".format(schema, schema, num, schema, num, metric), end = "")                 
 
             else:            
-                print("\n{} schema {}Sch{} format {}Sch{},%localdate%,%localtime%,%servname%\,{}".format(schema, schema, num, schema, num, metric), end = "")
+                print("\n{} schema {}Sch{} format {}Sch{},%localdate%,%localtime%,%servname%,{}".format(schema, schema, num, schema, num, metric), end = "")
         else:
             print(",{}".format(metric), end="")
     elif schema == "disconnectReason" and "disc-reason" in line.split(" ")[2] and line.split(" ")[2] != "%disc-reason-summary%":

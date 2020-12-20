@@ -111,6 +111,7 @@ def load_bulkstat_data():
                     identifier = data
                 elif number > 3:
                     if data != '0' and data != "" and data.isnumeric():
+                        print(key)
                         config = bulkstat_config[key][number].replace("%","").split("-")
                         string_output = "{} {{id=\"{}\"".format(schema.replace("-","_"), identifier.replace("-","_"))
                         for num,met in enumerate(config):
