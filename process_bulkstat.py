@@ -3,6 +3,7 @@
 import re
 import sys
 import os
+from pathlib import Path  
 
 
 bulkstat_file = sys.argv[1]
@@ -20,7 +21,7 @@ bulkstat_data_file = open(bulkstat_file)
 bulkstat_data = bulkstat_data_file.readlines()
 bulkstat_data_file.close()
 
-host = bulkstat_file.split("_")[0]
+host = Path(bulkstat_file).name.split("_")[0]
 temp_file = "temp_file.txt"
 output_file = open(temp_file, "w+")
 
