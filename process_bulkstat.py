@@ -115,11 +115,12 @@ def load_bulkstat_data():
                 '''
                 Special condition to handle IP Pool
                 ippoolSch1,20201218,182500,pool-3669,0,0,0,244,10.66.0.11
+                work to do: adding group name in the label
                 '''                    
                 if number == 3:
                     groupname = bulkstat_data_line[3]
                 elif number > 3:
-                    if data != '0' and data != "":
+                    if data != '0' and data != "" and data.isnumeric():
                         config = bulkstat_config[key][number].replace("%","")
                         output_file.write("ippool {{poolname=\"{}\", metric=\"{}\"}} {}\n".format(groupname.replace("-","_"), config.replace("-","_"), data))                                        
             else:
