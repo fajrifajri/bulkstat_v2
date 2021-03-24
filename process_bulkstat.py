@@ -9,11 +9,11 @@ from pathlib import Path
 bulkstat_file = sys.argv[1]
 
 pushgateway_ip = "127.0.0.1"
-sch_to_metric_file  = open("bulkstat_sch_to_metric.csv")
+sch_to_metric_file  = open("/etc/bulkstat/bulkstat_sch_to_metric.csv")
 sch_to_metric = sch_to_metric_file.readlines()
 sch_to_metric_file.close()
 
-bulkstat_schema_config = open("bulkstat_config.cfg")
+bulkstat_schema_config = open("/etc/bulkstat/bulkstat_config.cfg")
 bulkstat_schema = bulkstat_schema_config.readlines()
 bulkstat_schema_config.close()
 
@@ -22,7 +22,7 @@ bulkstat_data = bulkstat_data_file.readlines()
 bulkstat_data_file.close()
 
 host = Path(bulkstat_file).name.split("_")[0]
-temp_file = "temp_file.txt"
+temp_file = "/tmp/temp_file.txt"
 output_file = open(temp_file, "w+")
 
 schema_to_metric  = {}
@@ -97,6 +97,11 @@ def load_bulkstat_data():
         schema_match = re.search(r"(^.*)Sch",line)
         temp_output = {}
 
+        two_keys = ["radius-group",\
+            "apn-qci-duration",\
+            "mon-di-net",\
+            "pgw-egtpc-s5s8"]
+
         if schema_match:
             schema = schema_match.group(1)
         for number, data in enumerate(bulkstat_data_line):                
@@ -112,7 +117,7 @@ def load_bulkstat_data():
                     config = bulkstat_config[key][number].replace("%","")
                     metric = schema_to_metric[config]
                     output_file.write("disconnectReason {{reason=\"{}\"}} {}\n".format(metric.replace("-","_"), data)) 
-            elif key == "ippoolSch1":
+            elif schema == "ippool":
                 '''
                 Special condition to handle IP Pool
                 ippoolSch1,20201218,182500,pool-3669,0,0,0,244,10.66.0.11
@@ -124,6 +129,24 @@ def load_bulkstat_data():
                     if data != '0' and data != "" and data.isnumeric():
                         config = bulkstat_config[key][number].replace("%","")
                         output_file.write("ippool {{poolname=\"{}\", metric=\"{}\"}} {}\n".format(groupname.replace("-","_"), config.replace("-","_"), data))                                        
+            
+            #elif key.startswith("radius-groupSch") or key.startswith("icsrSch") or key.startswith("apn-qci-durationSch") or key.startswith("mon-di-netSch") or key.startswith("pgw-egtpc-s5s8Sch"):
+            elif schema in two_keys:
+                ''' special condition to handle 2 label
+                radius-groupSch3,20210323,170632,pod7aaa-group,10.58.124.16,0,0,0
+                '''
+                if number ==3:
+                    identifier1 = data     
+                elif number ==4:
+                    identifier2 = data     
+                elif number > 4:
+                    if data != '0' and data != "" and data.isnumeric():  
+                        config = bulkstat_config[key][number].replace("%","").split("-")  
+                        string_output = "{} {{label1=\"{}\", label2=\"{}\"".format(schema.replace("-","_"),identifier1.replace("-","_"), identifier2.replace("-","_")) 
+                        for num,met in enumerate(config):
+                            string_output = string_output + ", metric{}=\"{}\"".format(num, met)
+                        string_output = string_output + "}} {}\n".format(data)
+                        output_file.write(string_output)
             else:
                 if number ==3:
                     identifier = data
@@ -159,4 +182,3 @@ if __name__ == "__main__":
     load_bulkstat_data()
     gen_pushgw_format()
     #print(output)
- 

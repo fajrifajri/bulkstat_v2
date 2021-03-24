@@ -18,7 +18,7 @@ bulkstat_file.close()
 
 num = 0
 line_num = 0
-max_len = 950
+max_len = 800
 
 start = True
 
